@@ -1,27 +1,31 @@
-import faiss
 import numpy as np
-from vector_store import load_index
 from embeddings import get_embedding
+from vector_store import load_index
 
-def search_similar(query: str, top_k: int = 10) -> list:
+
+def search_similar(query: str, top_k: int = 5) -> list:
+    """FAISS similarity search — returns top_k documents for the query."""
     index, documents = load_index()
-    if not index:
-        return []
+    if index is None or index.ntotal == 0:
+        raise RuntimeError(
+            "FAISS index is empty. Run: python vector_store.py"
+        )
 
-    query_embedding = get_embedding(query)
-    query_embedding = np.array([query_embedding]).astype('float32')
-
-    distances, indices = index.search(query_embedding, top_k)
+    query_vec = np.array([get_embedding(query)]).astype("float32")
+    k = min(top_k, index.ntotal)
+    distances, indices = index.search(query_vec, k)
 
     results = []
-    for i, idx in enumerate(indices[0]):
-        if idx != -1:
-            doc = documents[idx]
-            results.append({
-                "id": doc["id"],
-                "title": doc["title"],
-                "content": doc["content"],
-                "similarity_score": float(1 / (1 + distances[0][i])),
-                "distance": float(distances[0][i])
-            })
+    for dist, idx in zip(distances[0], indices[0]):
+        if idx == -1:
+            continue
+        doc = dict(documents[idx])
+        doc["distance"] = float(dist)
+        doc["score"] = 1.0 / (1.0 + float(dist))
+        results.append(doc)
     return results
+
+
+if __name__ == "__main__":
+    for d in search_similar("secure login with JWT", top_k=3):
+        print(f"{d['score']:.3f}  {d['title']}")

@@ -47,7 +47,6 @@ Score >= 7 → APPROVED! ✅
 - **python-dotenv** — Environment management
 
 ## Project Structure
-```
 Advanced-RAG-Reranking-Self-Reflection/
 ├── embeddings.py       # Text → 384-dim vectors
 ├── vector_store.py     # Store/load FAISS index
@@ -61,7 +60,7 @@ Advanced-RAG-Reranking-Self-Reflection/
 ├── requirements.txt
 ├── .gitignore
 └── .env                # API keys (not committed)
-```
+
 ## Setup
 
 ### 1. Clone the repo
